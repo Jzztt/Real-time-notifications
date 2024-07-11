@@ -22,11 +22,13 @@ class LanesUpdated implements ShouldBroadcast
      */
     public $message;
     public $lanes;
-    public function __construct(string $message, $lanes)
+    public $type;
+    public function __construct(string $message, $lanes, $type)
     {
         //
         $this->message = $message;
         $this->lanes = $lanes;
+        $this->type = $type;
     }
 
     /**
@@ -36,7 +38,7 @@ class LanesUpdated implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        Log::debug('Lanes Updated', [$this->message, $this->lanes]);
+        Log::debug('Lanes Updated', [$this->message, $this->lanes, $this->type]);
         return new Channel('notifications');
     }
 
@@ -45,6 +47,7 @@ class LanesUpdated implements ShouldBroadcast
         return [
             'lanes' => $this->lanes->load('tickets'),
             'message' => $this->message,
+            'type' => $this->type
         ];
     }
 }

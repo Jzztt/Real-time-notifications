@@ -27,7 +27,7 @@ class LaneController extends Controller
         $task->lane_id = $newListId;
         $task->save();
         $lanes = Lane::with('tickets')->get();
-        broadcast(new LanesUpdated('Lanes Updated',  $lanes))->toOthers();
+        broadcast(new LanesUpdated('Lanes Updated',  $lanes, "success"))->toOthers();
 
         return response()->json(['message' => 'Task moved successfully']);
     }

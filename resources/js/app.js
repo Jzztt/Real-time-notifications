@@ -60,11 +60,9 @@ function attachDeleteEvent() {
     const deleteButtons = document.querySelectorAll(".delete-ticket");
 
     deleteButtons.forEach((button) => {
-        // Gắn sự kiện 'click'
         button.addEventListener("click", deleteTicket);
     });
 
-    // Đánh dấu là sự kiện đã được gắn
     deleteEventAttached = true;
 }
 
@@ -134,8 +132,7 @@ function updateBoard(lanes) {
 attachDeleteEvent();
 
 Echo.channel("notifications").listen("LanesUpdated", (e) => {
-    console.log(e);
-    showToast(e.message);
+    showToast(e.message, e.type);
     updateBoard(e.lanes);
 });
 
