@@ -14,17 +14,16 @@
         <div class="swim-lane" id="todo-lane" data-lane-id="{{$lane->id}}">
             <h3 class=" heading">{{$lane -> name}}</h3>
             @foreach($lane->tickets as $ticket)
-            <div class="task d-flex justify-content-between align-items-center" draggable="true" data-task-id="{{$ticket->id}}">
+            <div class="task d-flex justify-content-between align-items-center" draggable="true"
+                data-task-id="{{$ticket->id}}">
                 <span>
                     {{$ticket->title}}
                 </span>
                 <div class="action d-flex align-items-center gap-3">
                     <i class="fa-solid fa-gear"></i>
-                    <form action="{{ route('ticket.destroy', $ticket->id) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="border-0 bg-transparent"> <i class="fa-solid fa-trash"></i></button>
-                    </form>
+                    <button class="delete-ticket border-0 bg-transparent" data-id="{{ $ticket->id }}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
 
                 </div>
             </div>

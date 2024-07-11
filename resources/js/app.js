@@ -2,7 +2,6 @@ import "./bootstrap";
 import showToast from "./toast";
 import { initializeDragAndDrop, insertAboveTask } from "./drag";
 
-
 const form = document.getElementById("todo-form");
 const input = document.getElementById("todo-input");
 const todoLane = document.getElementById("todo-lane");
@@ -52,83 +51,88 @@ form.addEventListener("submit", (e) => {
             console.error("Error creating task:", error);
         });
 });
+let deleteEventAttached = false;
 
+// Hàm để gắn sự kiện xóa cho các nút xóa
+function attachDeleteEvent() {
+    if (deleteEventAttached) return; // Nếu sự kiện đã được gắn, thoát khỏi hàm
+
+    const deleteButtons = document.querySelectorAll('.delete-ticket');
+
+    deleteButtons.forEach(button => {
+        // Gắn sự kiện 'click'
+        button.addEventListener('click', deleteTicket);
+    });
+
+    // Đánh dấu là sự kiện đã được gắn
+    deleteEventAttached = true;
+}
+
+// Hàm xử lý sự kiện xóa vé
+function deleteTicket() {
+    const ticketId = this.getAttribute('data-id');
+    if (confirm('Are you sure you want to delete this ticket?')) {
+        fetch(`/ticket/${ticketId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Loại bỏ vé đã xóa khỏi DOM
+                this.closest('.task').remove();
+            } else {
+                // Xử lý lỗi
+                alert('Failed to delete the ticket.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+// Hàm cập nhật bảng
 function updateBoard(lanes) {
     const lanesContainer = document.querySelector(".lanes");
     lanesContainer.innerHTML = "";
 
     lanes.forEach((lane) => {
-        const laneElement = document.createElement("div");
-        laneElement.classList.add("swim-lane");
-        laneElement.setAttribute("data-lane-id", lane.id);
-
-        const laneHeading = document.createElement("h3");
-        laneHeading.classList.add("heading");
-        laneHeading.textContent = lane.name;
-        laneElement.appendChild(laneHeading);
+        let laneHTML = `
+            <div class="swim-lane" data-lane-id="${lane.id}">
+                <h3 class="heading">${lane.name}</h3>
+        `;
 
         lane.tickets.forEach((ticket) => {
-            const ticketElement = document.createElement("div");
-            ticketElement.classList.add(
-                "task",
-                "d-flex",
-                "justify-content-between",
-                "align-items-center"
-            );
-            ticketElement.setAttribute("draggable", "true");
-            ticketElement.setAttribute("data-task-id", ticket.id);
-
-            const ticketTitle = document.createElement("span");
-            ticketTitle.textContent = ticket.title;
-            ticketElement.appendChild(ticketTitle);
-
-            const actionDiv = document.createElement("div");
-            actionDiv.classList.add(
-                "action",
-                "d-flex",
-                "align-items-center",
-                "gap-3"
-            );
-
-            const gearIcon = document.createElement("i");
-            gearIcon.classList.add("fa-solid", "fa-gear");
-            actionDiv.appendChild(gearIcon);
-
-            const form = document.createElement("form");
-            form.setAttribute("action", `/ticket/${ticket.id}`);
-            form.setAttribute("method", "POST");
-            form.classList.add("d-inline");
-
-            const csrfInput = document.createElement("input");
-            csrfInput.setAttribute("type", "hidden");
-            csrfInput.setAttribute("name", "_token");
-            csrfInput.setAttribute("value", csrfToken);
-            form.appendChild(csrfInput);
-
-            const methodInput = document.createElement("input");
-            methodInput.setAttribute("type", "hidden");
-            methodInput.setAttribute("name", "_method");
-            methodInput.setAttribute("value", "DELETE");
-            form.appendChild(methodInput);
-
-            const deleteButton = document.createElement("button");
-            deleteButton.setAttribute("type", "submit");
-            deleteButton.classList.add("border-0", "bg-transparent");
-            deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
-            form.appendChild(deleteButton);
-
-            actionDiv.appendChild(form);
-            ticketElement.appendChild(actionDiv);
-
-            laneElement.appendChild(ticketElement);
+            laneHTML += `
+                <div class="task d-flex justify-content-between align-items-center" draggable="true" data-task-id="${ticket.id}">
+                    <span>${ticket.title}</span>
+                    <div class="action d-flex align-items-center gap-3">
+                        <i class="fa-solid fa-gear"></i>
+                        <button class="delete-ticket border-0 bg-transparent" data-id="${ticket.id}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
         });
 
-        lanesContainer.appendChild(laneElement);
+        laneHTML += `</div>`;
+        lanesContainer.innerHTML += laneHTML;
     });
+
+    // Gắn lại sự kiện xóa sau khi cập nhật DOM
+    deleteEventAttached = false; // Đặt lại cờ trước khi gắn lại sự kiện
+    attachDeleteEvent();
 
     // Gắn lại sự kiện kéo thả sau khi cập nhật DOM
     initializeDragAndDrop();
 }
+
+// Gọi hàm để gắn sự kiện xóa khi tải trang
+attachDeleteEvent();
 
 Echo.channel("notifications").listen("LanesUpdated", (e) => {
     console.log(e);
