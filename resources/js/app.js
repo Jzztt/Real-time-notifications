@@ -57,11 +57,11 @@ let deleteEventAttached = false;
 function attachDeleteEvent() {
     if (deleteEventAttached) return; // Nếu sự kiện đã được gắn, thoát khỏi hàm
 
-    const deleteButtons = document.querySelectorAll('.delete-ticket');
+    const deleteButtons = document.querySelectorAll(".delete-ticket");
 
-    deleteButtons.forEach(button => {
+    deleteButtons.forEach((button) => {
         // Gắn sự kiện 'click'
-        button.addEventListener('click', deleteTicket);
+        button.addEventListener("click", deleteTicket);
     });
 
     // Đánh dấu là sự kiện đã được gắn
@@ -70,27 +70,26 @@ function attachDeleteEvent() {
 
 // Hàm xử lý sự kiện xóa vé
 function deleteTicket() {
-    const ticketId = this.getAttribute('data-id');
-    if (confirm('Are you sure you want to delete this ticket?')) {
+    const ticketId = this.getAttribute("data-id");
+    if (confirm("Are you sure you want to delete this ticket?")) {
         fetch(`/ticket/${ticketId}`, {
-            method: 'DELETE',
+            method: "DELETE",
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Content-Type': 'application/json'
-            }
+                "X-CSRF-TOKEN": csrfToken,
+                "Content-Type": "application/json",
+            },
         })
-        .then(response => {
-            if (response.ok) {
-                // Loại bỏ vé đã xóa khỏi DOM
-                this.closest('.task').remove();
-            } else {
-                // Xử lý lỗi
-                alert('Failed to delete the ticket.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+            .then((response) => {
+                if (response.ok) {
+                    this.closest(".task").remove();
+                    return response.json();
+                } else {
+                    throw new Error("Network response was not ok");
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
     }
 }
 

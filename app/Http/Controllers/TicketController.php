@@ -39,7 +39,7 @@ class TicketController extends Controller
         $lanes = Lane::with('tickets')->get();
 
         broadcast(new LanesUpdated('Tickets Created',  $lanes))->toOthers();;
-        return view('home', compact('lanes'));
+        return response()->json(['message' => 'Ticket created successfully']);
     }
 
     /**
@@ -76,6 +76,6 @@ class TicketController extends Controller
         $ticket->delete();
         $lanes = Lane::with('tickets')->get();
         broadcast(new LanesUpdated('Tickets Deleted ',  $lanes))->toOthers();;
-        return view('home', compact('lanes'));
+        return response()->json(['message' => 'Ticket deleted successfully']);
     }
 }
